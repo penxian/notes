@@ -1,0 +1,174 @@
+#笔记记录
+1. IE8 supports dataURI until *32KiB*. IE9 doesn't have such limitation.
+2. IE8 iframe 加载字体问题，The solution is to refresh the href on the css tag that declares the font families
+3. CSS3图片转动效果  
+<b>css:</b>
+
+```css
+	.showIon{
+		background-position: 1px 0;
+		background: url(icon.png) no-repeat #6e6e6e;height: 40px;display: inline-block; width:40px; vertical-align: middle;transition: all .5s;
+	}
+
+	.showIon:hover{
+		-webkit-transform:rotate(360deg);
+		transform:rotate(360deg);
+	}
+```
+<b>HTML</b>
+
+```html
+<span class="showIon"></span>
+```
+
+4. JavaScript字符格式化
+
+```javascript
+String.prototype.formatValue = function(){
+		var that = arguments;
+		var myReg = /{([^{}]+)?}/ig;
+		return this.replace(myReg,function(){
+			for (var i=0,len=arguments.length;i<len;i++){
+				console.debug('第'+i+"个参数是"+arguments[i]);
+			}
+			var value = that[arguments[1]];
+			return value;
+		})
+	}
+```
+
+5. `bower install` 默认去git协议去获取，而有些公司则屏蔽了这些端口，所以把修改为https。  
+	修改`git config --global url."https://".insteadOf git://`  
+	改回来则 `git config --global --unset url."https://".insteadOf`
+
+6. ruby rubyGems 镜像 `http://ruby.taobao.org/`
+
+7. IE8 Textarea scrolling bug[Link](http://grantovich.net/misc/ie8-textarea-bug)
+>问题：IE8 下textarea如果带滚动条`(height:100px;overflow:scroll-y;)`，内容高度超过可视区域之后，输入文字，滚动条位置会乱跳。  
+解决：
+
+```css
+	textarea.fix-scroll{
+	  width: 700px;
+	  min-width: 100%;
+	  max-width: 100%;
+	}
+```
+8.
+>`document.body.clientWidth` ==> BODY对象宽度  
+`document.body.clientHeight` ==> BODY对象高度  
+`document.documentElement.clientWidth` ==> 可见区域宽度  
+`document.documentElement.clientHeight` ==> 可见区域高度  
+就是因为少了DOCTYPE 所以 `document.documentElement.clientHeight` 的值为*0。而换成 `document.body.clientHeight`就好了
+
+9. 判断是否全是中文。
+
+```javascript
+function isChinese(temp){ 
+	var re=/[^\u4e00-\u9fa5]/; 
+	if(re.test(temp)) return false; 
+		return true; 
+	} 
+alert(isChinese("中国Chinese")); 
+```
+10. 中文转化Unicode
+
+```javascript
+	var fs = require("fs");
+var path = require("path");
+fs.readFile(path.join(__dirname,'zh-cn.js'), 'utf-8', function (err, data) {
+	//转化Unicode
+	var decToHex = function(str) {
+		var res=[];
+		for(var i=0;i < str.length;i++)
+			res[i]=("00"+str.charCodeAt(i).toString(16)).slice(-4);
+		return "\\u"+res.join("\\u");
+	};
+	//解码Unicode
+	var hexToDec = function(str) {
+		str=str.replace(/\\/g,"%");
+		return unescape(str);
+	}
+	var data1 = data.replace(/[\u00FF-\uFFFF]/g,function($0){
+			return decToHex($0);
+		});
+	fs.writeFile(path.join(__dirname,"zh-cn-unicode.js"), data1, 'utf-8', function(err){
+		console.log(!!err);
+		if(!!err){
+			console.log('写入文件失败');
+		}else{
+			console.log('保存成功');
+		}
+	})
+	console.log(hexToDec("\u4e94"));
+});
+```
+11. IE透明度
+*IE8*里可以这样写　
+
+`-ms-filter:”progid:DXImageTransform.Microsoft.Alpha(opacity=50)”;`
+
+*IE7*里可以这样写　
+
+`filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50);`
+
+*IE6,IE7,IE8*里都可以这样写　
+
+`filter:alpha(opacity=50)`
+
+12. 禁用文字选中
+
+```css
+.none_select{
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    -o-user-select:none;
+    user-select:none;
+}
+```
+onselectstart="return false" ： chrome 、ie 都支持，但firefox不支持！  
+user-select：chrome firefox 都支持，ie不支持！  
+上述操作对input标签失效，可用input标签的disabled="disabled" 来实现！  
+ie7 还不支持onselectstart="return false"，忽略！
+
+13. 标准表格 解决第一行colspan后 宽度失效问题
+
+```html
+	<table>
+		<colgroup>
+			<col width=60%></col>
+			<col width=20%></col>
+			<col width=20%></col>
+		</colgroup>
+		<tr>
+			<th colspan="2">测试：</th>
+			<th></th>
+		</tr>
+		<tr>
+			<th>测试：</th>
+			<th>数据模型dddddddddddd</th>
+			<th>100</th>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+```
+因为一般表格都会定义一个`table-layout: fixed;`防止td被连串字符撑开，但是如果首行有合并单元格的话 TD宽度定义就会失效
+最好的办法，在最上边加以下代码来控制td宽度
+
+```html
+<colgroup>
+       <col width=60%></col>
+       <col width=20%></col>
+       <col width=20%></col>
+</colgroup>
+```
